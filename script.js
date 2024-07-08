@@ -12,6 +12,11 @@ const svg = d3.select("#visualization")
 
 let currentScene = 1;
 
+// Create tooltip
+const tooltip = d3.select("body").append("div")
+  .attr("class", "tooltip")
+  .style("opacity", 0);
+
 // Load data
 d3.csv("auto_data_2017.csv").then(function(data) {
   // Convert string values to numbers
@@ -64,13 +69,24 @@ function drawIntroduction() {
     .attr("x", width / 2)
     .attr("y", height / 2)
     .attr("text-anchor", "middle")
-    .text("Introduction to 2017 Automobile Data");
+    .text("Introduction to 2017 Automobile Data")
+    .attr("class", "title")
+    .style("opacity", 0)
+    .transition()
+    .duration(1000)
+    .style("opacity", 1);
   
   svg.append("text")
     .attr("x", width / 2)
     .attr("y", height / 2 + 30)
     .attr("text-anchor", "middle")
-    .text("Click 'Next' to explore the data");
+    .text("Click 'Next' to explore the data")
+    .attr("class", "subtitle")
+    .style("opacity", 0)
+    .transition()
+    .duration(1000)
+    .delay(500)
+    .style("opacity", 1);
 }
 
 function drawScatterPlot(data) {
@@ -82,13 +98,20 @@ function drawScatterPlot(data) {
     .domain([0, d3.max(data, d => d.AverageHighwayMPG)])
     .range([height, 0]);
 
+  const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+  // Add X axis
   svg.append("g")
     .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x));
+    .call(d3.axisBottom(x))
+    .attr("class", "x-axis");
 
+  // Add Y axis
   svg.append("g")
-    .call(d3.axisLeft(y));
+    .call(d3.axisLeft(y))
+    .attr("class", "y-axis");
 
+  // Add dots
   svg.selectAll("circle")
     .data(data)
     .enter()
@@ -96,8 +119,23 @@ function drawScatterPlot(data) {
     .attr("cx", d => x(d.AverageCityMPG))
     .attr("cy", d => y(d.AverageHighwayMPG))
     .attr("r", 5)
-    .style("fill", "#69b3a2");
+    .style("fill", d => color(d.Make))
+    .style("opacity", 0.7)
+    .on("mouseover", function(event, d) {
+      tooltip.transition()
+        .duration(200)
+        .style("opacity", .9);
+      tooltip.html(`Make: ${d.Make}<br/>City MPG: ${d.AverageCityMPG}<br/>Highway MPG: ${d.AverageHighwayMPG}`)
+        .style("left", (event.pageX + 5) + "px")
+        .style("top", (event.pageY - 28) + "px");
+    })
+    .on("mouseout", function(d) {
+      tooltip.transition()
+        .duration(500)
+        .style("opacity", 0);
+    });
 
+  // Add labels
   svg.append("text")
     .attr("x", width / 2)
     .attr("y", height + margin.bottom - 10)
@@ -110,6 +148,25 @@ function drawScatterPlot(data) {
     .attr("y", -margin.left + 20)
     .attr("text-anchor", "middle")
     .text("Average Highway MPG");
+
+  // Add zoom functionality
+  const zoom = d3.zoom()
+    .scaleExtent([1, 8])
+    .on("zoom", zoomed);
+
+  svg.call(zoom);
+
+  function zoomed(event) {
+    const newX = event.transform.rescaleX(x);
+    const newY = event.transform.rescaleY(y);
+    
+    svg.selectAll(".x-axis").call(d3.axisBottom(newX));
+    svg.selectAll(".y-axis").call(d3.axisLeft(newY));
+    
+    svg.selectAll("circle")
+      .attr("cx", d => newX(d.AverageCityMPG))
+      .attr("cy", d => newY(d.AverageHighwayMPG));
+  }
 }
 
 function drawFuelTypeComparison(data) {
@@ -136,16 +193,21 @@ function drawFuelTypeComparison(data) {
   svg.append("g")
     .call(d3.axisLeft(y));
 
+  // Add bars with transition
   svg.selectAll(".bar-city")
     .data(fuelData)
     .enter()
     .append("rect")
     .attr("class", "bar-city")
     .attr("x", d => x(d.fuel))
-    .attr("y", d => y(d.avgCityMPG))
+    .attr("y", height)
     .attr("width", x.bandwidth() / 2)
-    .attr("height", d => height - y(d.avgCityMPG))
-    .attr("fill", "#69b3a2");
+    .attr("height", 0)
+    .attr("fill", "#69b3a2")
+    .transition()
+    .duration(1000)
+    .attr("y", d => y(d.avgCityMPG))
+    .attr("height", d => height - y(d.avgCityMPG));
 
   svg.selectAll(".bar-highway")
     .data(fuelData)
@@ -153,10 +215,36 @@ function drawFuelTypeComparison(data) {
     .append("rect")
     .attr("class", "bar-highway")
     .attr("x", d => x(d.fuel) + x.bandwidth() / 2)
-    .attr("y", d => y(d.avgHighwayMPG))
+    .attr("y", height)
     .attr("width", x.bandwidth() / 2)
-    .attr("height", d => height - y(d.avgHighwayMPG))
-    .attr("fill", "#404080");
+    .attr("height", 0)
+    .attr("fill", "#404080")
+    .transition()
+    .duration(1000)
+    .attr("y", d => y(d.avgHighwayMPG))
+    .attr("height", d => height - y(d.avgHighwayMPG));
+
+  // Add interactivity
+  svg.selectAll("rect")
+    .on("mouseover", function(event, d) {
+      d3.select(this).transition()
+        .duration(200)
+        .attr("opacity", 0.7);
+      tooltip.transition()
+        .duration(200)
+        .style("opacity", .9);
+      tooltip.html(`Fuel: ${d.fuel}<br/>City MPG: ${d.avgCityMPG.toFixed(2)}<br/>Highway MPG: ${d.avgHighwayMPG.toFixed(2)}`)
+        .style("left", (event.pageX + 5) + "px")
+        .style("top", (event.pageY - 28) + "px");
+    })
+    .on("mouseout", function(d) {
+      d3.select(this).transition()
+        .duration(500)
+        .attr("opacity", 1);
+      tooltip.transition()
+        .duration(500)
+        .style("opacity", 0);
+    });
 
   svg.append("text")
     .attr("x", width / 2)
@@ -172,10 +260,37 @@ function drawFuelTypeComparison(data) {
     .text("Average MPG");
 
   // Legend
-  svg.append("rect").attr("x", width - 100).attr("y", 0).attr("width", 10).attr("height", 10).style("fill", "#69b3a2")
-  svg.append("rect").attr("x", width - 100).attr("y", 20).attr("width", 10).attr("height", 10).style("fill", "#404080")
-  svg.append("text").attr("x", width - 85).attr("y", 10).text("City").style("font-size", "12px").attr("alignment-baseline","middle")
-  svg.append("text").attr("x", width - 85).attr("y", 30).text("Highway").style("font-size", "12px").attr("alignment-baseline","middle")
+  const legend = svg.append("g")
+    .attr("class", "legend")
+    .attr("transform", `translate(${width - 100}, 0)`);
+
+  legend.append("rect")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", 10)
+    .attr("height", 10)
+    .style("fill", "#69b3a2");
+
+  legend.append("rect")
+    .attr("x", 0)
+    .attr("y", 20)
+    .attr("width", 10)
+    .attr("height", 10)
+    .style("fill", "#404080");
+
+  legend.append("text")
+    .attr("x", 15)
+    .attr("y", 10)
+    .text("City")
+    .style("font-size", "12px")
+    .attr("alignment-baseline","middle");
+
+  legend.append("text")
+    .attr("x", 15)
+    .attr("y", 30)
+    .text("Highway")
+    .style("font-size", "12px")
+    .attr("alignment-baseline","middle");
 }
 
 function drawTopBrands(data) {
@@ -210,16 +325,21 @@ function drawTopBrands(data) {
   svg.append("g")
     .call(d3.axisLeft(y));
 
+  // Add bars with transition
   svg.selectAll(".bar-city")
     .data(sortedBrands)
     .enter()
     .append("rect")
     .attr("class", "bar-city")
     .attr("x", d => x(d.name))
-    .attr("y", d => y(d.avgCityMPG))
+    .attr("y", height)
     .attr("width", x.bandwidth() / 2)
-    .attr("height", d => height - y(d.avgCityMPG))
-    .attr("fill", "#69b3a2");
+    .attr("height", 0)
+    .attr("fill", "#69b3a2")
+    .transition()
+    .duration(1000)
+    .attr("y", d => y(d.avgCityMPG))
+    .attr("height", d => height - y(d.avgCityMPG));
 
   svg.selectAll(".bar-highway")
     .data(sortedBrands)
@@ -227,10 +347,36 @@ function drawTopBrands(data) {
     .append("rect")
     .attr("class", "bar-highway")
     .attr("x", d => x(d.name) + x.bandwidth() / 2)
-    .attr("y", d => y(d.avgHighwayMPG))
+    .attr("y", height)
     .attr("width", x.bandwidth() / 2)
-    .attr("height", d => height - y(d.avgHighwayMPG))
-    .attr("fill", "#404080");
+    .attr("height", 0)
+    .attr("fill", "#404080")
+    .transition()
+    .duration(1000)
+    .attr("y", d => y(d.avgHighwayMPG))
+    .attr("height", d => height - y(d.avgHighwayMPG));
+
+  // Add interactivity
+  svg.selectAll("rect")
+    .on("mouseover", function(event, d) {
+      d3.select(this).transition()
+        .duration(200)
+        .attr("opacity", 0.7);
+      tooltip.transition()
+        .duration(200)
+        .style("opacity", .9);
+      tooltip.html(`Brand: ${d.name}<br/>City MPG: ${d.avgCityMPG.toFixed(2)}<br/>Highway MPG: ${d.avgHighwayMPG.toFixed(2)}`)
+        .style("left", (event.pageX + 5) + "px")
+        .style("top", (event.pageY - 28) + "px");
+    })
+    .on("mouseout", function(d) {
+      d3.select(this).transition()
+        .duration(500)
+        .attr("opacity", 1);
+      tooltip.transition()
+        .duration(500)
+        .style("opacity", 0);
+    });
 
   svg.append("text")
     .attr("x", width / 2)
@@ -240,34 +386,4 @@ function drawTopBrands(data) {
 
   svg.append("text")
     .attr("transform", "rotate(-90)")
-    .attr("x", -height / 2)
-    .attr("y", -margin.left + 20)
-    .attr("text-anchor", "middle")
-    .text("Average MPG");
-
-  // Legend
-  svg.append("rect").attr("x", width - 100).attr("y", 0).attr("width", 10).attr("height", 10).style("fill", "#69b3a2")
-  svg.append("rect").attr("x", width - 100).attr("y", 20).attr("width", 10).attr("height", 10).style("fill", "#404080")
-  svg.append("text").attr("x", width - 85).attr("y", 10).text("City").style("font-size", "12px").attr("alignment-baseline","middle")
-  svg.append("text").attr("x", width - 85).attr("y", 30).text("Highway").style("font-size", "12px").attr("alignment-baseline","middle")
-}
-
-function drawConclusion() {
-  svg.append("text")
-    .attr("x", width / 2)
-    .attr("y", height / 2)
-    .attr("text-anchor", "middle")
-    .text("Conclusion: Key Findings from 2017 Automobile Data");
-  
-  svg.append("text")
-    .attr("x", width / 2)
-    .attr("y", height / 2 + 30)
-    .attr("text-anchor", "middle")
-    .text("Electric vehicles tend to have the highest MPG ratings");
-  
-  svg.append("text")
-    .attr("x", width / 2)
-    .attr("y", height / 2 + 60)
-    .attr("text-anchor", "middle")
-    .text("Luxury brands often have lower MPG ratings");
-}
+    .attr("x", -height / 2

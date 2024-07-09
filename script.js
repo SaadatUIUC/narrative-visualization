@@ -163,6 +163,14 @@ function drawScatterPlot(data) {
     scatterPlot.select(".x-axis").call(d3.axisBottom(newX));
     scatterPlot.select(".y-axis").call(d3.axisLeft(newY));
   }
+
+  scatterPlot.on("click", function(event) {
+    zoom.scaleBy(scatterPlot.transition().duration(750), 2);
+  });
+
+  scatterPlot.on("dblclick", function(event) {
+    zoom.scaleBy(scatterPlot.transition().duration(750), 0.5);
+  });
 }
 
 function drawFuelTypeComparison(data) {

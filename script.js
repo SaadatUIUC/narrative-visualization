@@ -82,16 +82,33 @@ function drawScatterPlot(data) {
     .domain([0, d3.max(data, d => d.AverageHighwayMPG)])
     .range([height, 0]);
 
-  svg.append("g")
-    .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x));
-
-  svg.append("g")
-    .call(d3.axisLeft(y));
-
   const tooltip = d3.select("#tooltip");
 
-  svg.selectAll("circle")
+  const zoom = d3.zoom()
+    .scaleExtent([1, 10])
+    .translateExtent([[-100, -100], [width + 100, height + 100]])
+    .on("zoom", zoomed);
+
+  const scatterPlot = svg.append("g")
+    .attr("clip-path", "url(#clip)");
+
+  scatterPlot.append("rect")
+    .attr("width", width)
+    .attr("height", height)
+    .style("fill", "none")
+    .style("pointer-events", "all")
+    .call(zoom);
+
+  scatterPlot.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .attr("class", "x-axis")
+    .call(d3.axisBottom(x));
+
+  scatterPlot.append("g")
+    .attr("class", "y-axis")
+    .call(d3.axisLeft(y));
+
+  const points = scatterPlot.selectAll("circle")
     .data(data)
     .enter()
     .append("circle")
@@ -99,7 +116,12 @@ function drawScatterPlot(data) {
     .attr("cy", d => y(d.AverageHighwayMPG))
     .attr("r", 5)
     .style("fill", "#69b3a2")
+    .style("stroke", "#000")
+    .style("stroke-width", "1px")
     .on("mouseover", function(event, d) {
+      d3.select(this)
+        .attr("r", 7)
+        .style("fill", "#ff5733");
       tooltip.style("display", "block")
         .html(`Make: ${d.Make}<br>Model: ${d.Model}<br>City MPG: ${d.AverageCityMPG}<br>Highway MPG: ${d.AverageHighwayMPG}`)
         .style("left", `${event.pageX + 5}px`)
@@ -110,6 +132,9 @@ function drawScatterPlot(data) {
         .style("top", `${event.pageY - 28}px`);
     })
     .on("mouseout", function() {
+      d3.select(this)
+        .attr("r", 5)
+        .style("fill", "#69b3a2");
       tooltip.style("display", "none");
     });
 
@@ -125,8 +150,20 @@ function drawScatterPlot(data) {
     .attr("y", -margin.left + 20)
     .attr("text-anchor", "middle")
     .text("Average Highway MPG");
-}
 
+  function zoomed(event) {
+    const transform = event.transform;
+    const newX = transform.rescaleX(x);
+    const newY = transform.rescaleY(y);
+
+    scatterPlot.selectAll("circle")
+      .attr("cx", d => newX(d.AverageCityMPG))
+      .attr("cy", d => newY(d.AverageHighwayMPG));
+
+    scatterPlot.select(".x-axis").call(d3.axisBottom(newX));
+    scatterPlot.select(".y-axis").call(d3.axisLeft(newY));
+  }
+}
 
 function drawFuelTypeComparison(data) {
   const fuelTypes = [...new Set(data.map(d => d.Fuel))];

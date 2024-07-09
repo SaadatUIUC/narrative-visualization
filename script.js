@@ -223,3 +223,51 @@ function drawTopBrands(data) {
 
   svg.selectAll(".bar-highway")
     .data(sortedBrands)
+    .enter()
+    .append("rect")
+    .attr("class", "bar-highway")
+    .attr("x", d => x(d.name) + x.bandwidth() / 2)
+    .attr("y", d => y(d.avgHighwayMPG))
+    .attr("width", x.bandwidth() / 2)
+    .attr("height", d => height - y(d.avgHighwayMPG))
+    .attr("fill", "#404080");
+
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom - 10)
+    .attr("text-anchor", "middle")
+    .text("Top 10 Brands by Average MPG");
+
+  svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 20)
+    .attr("text-anchor", "middle")
+    .text("Average MPG");
+
+  // Legend
+  svg.append("rect").attr("x", width - 100).attr("y", 0).attr("width", 10).attr("height", 10).style("fill", "#69b3a2")
+  svg.append("rect").attr("x", width - 100).attr("y", 20).attr("width", 10).attr("height", 10).style("fill", "#404080")
+  svg.append("text").attr("x", width - 85).attr("y", 10).text("City").style("font-size", "12px").attr("alignment-baseline","middle")
+  svg.append("text").attr("x", width - 85).attr("y", 30).text("Highway").style("font-size", "12px").attr("alignment-baseline","middle")
+}
+
+function drawConclusion() {
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", height / 2)
+    .attr("text-anchor", "middle")
+    .text("Conclusion: Key Findings from 2017 Automobile Data");
+  
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", height / 2 + 30)
+    .attr("text-anchor", "middle")
+    .text("Electric vehicles tend to have the highest MPG ratings");
+  
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", height / 2 + 60)
+    .attr("text-anchor", "middle")
+    .text("Luxury brands often have lower MPG ratings");
+}

@@ -89,6 +89,8 @@ function drawScatterPlot(data) {
   svg.append("g")
     .call(d3.axisLeft(y));
 
+  const tooltip = d3.select("#tooltip");
+
   svg.selectAll("circle")
     .data(data)
     .enter()
@@ -96,7 +98,20 @@ function drawScatterPlot(data) {
     .attr("cx", d => x(d.AverageCityMPG))
     .attr("cy", d => y(d.AverageHighwayMPG))
     .attr("r", 5)
-    .style("fill", "#69b3a2");
+    .style("fill", "#69b3a2")
+    .on("mouseover", function(event, d) {
+      tooltip.style("display", "block")
+        .html(`Make: ${d.Make}<br>Model: ${d.Model}<br>City MPG: ${d.AverageCityMPG}<br>Highway MPG: ${d.AverageHighwayMPG}`)
+        .style("left", `${event.pageX + 5}px`)
+        .style("top", `${event.pageY - 28}px`);
+    })
+    .on("mousemove", function(event) {
+      tooltip.style("left", `${event.pageX + 5}px`)
+        .style("top", `${event.pageY - 28}px`);
+    })
+    .on("mouseout", function() {
+      tooltip.style("display", "none");
+    });
 
   svg.append("text")
     .attr("x", width / 2)
@@ -111,6 +126,7 @@ function drawScatterPlot(data) {
     .attr("text-anchor", "middle")
     .text("Average Highway MPG");
 }
+
 
 function drawFuelTypeComparison(data) {
   const fuelTypes = [...new Set(data.map(d => d.Fuel))];

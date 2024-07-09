@@ -12,35 +12,7 @@ const svg = d3.select("#visualization")
 
 let currentScene = 1;
 
-// Create tooltip div
-const tooltip = d3.select("body").append("div")
-  .attr("class", "tooltip")
-  .style("opacity", 0);
-
-// Function to update the visualization based on the current scene
-function updateVisualization(scene, data) {
-  svg.selectAll("*").remove();  // Clear previous content
-  
-  switch(scene) {
-    case 1:
-      drawIntroduction();
-      break;
-    case 2:
-      drawScatterPlot(data);
-      break;
-    case 3:
-      drawFuelTypeComparison(data);
-      break;
-    case 4:
-      drawTopBrands(data);
-      break;
-    case 5:
-      drawConclusion();
-      break;
-  }
-}
-
-// Load data and set up visualization
+// Load data
 d3.csv("auto_data_2017.csv").then(function(data) {
   // Convert string values to numbers
   data.forEach(d => {
@@ -49,18 +21,41 @@ d3.csv("auto_data_2017.csv").then(function(data) {
     d.AverageCityMPG = +d.AverageCityMPG;
   });
 
+  // Function to update the visualization based on the current scene
+  function updateVisualization(scene) {
+    svg.selectAll("*").remove();  // Clear previous content
+    
+    switch(scene) {
+      case 1:
+        drawIntroduction();
+        break;
+      case 2:
+        drawScatterPlot(data);
+        break;
+      case 3:
+        drawFuelTypeComparison(data);
+        break;
+      case 4:
+        drawTopBrands(data);
+        break;
+      case 5:
+        drawConclusion();
+        break;
+    }
+  }
+  
   // Initialize with the first scene
-  updateVisualization(currentScene, data);
+  updateVisualization(1);
   
   // Add navigation buttons
   d3.select("#prev-button").on("click", function() {
     currentScene = Math.max(1, currentScene - 1);
-    updateVisualization(currentScene, data);
+    updateVisualization(currentScene);
   });
   
   d3.select("#next-button").on("click", function() {
     currentScene = Math.min(5, currentScene + 1);
-    updateVisualization(currentScene, data);
+    updateVisualization(currentScene);
   });
 });
 
@@ -101,26 +96,7 @@ function drawScatterPlot(data) {
     .attr("cx", d => x(d.AverageCityMPG))
     .attr("cy", d => y(d.AverageHighwayMPG))
     .attr("r", 5)
-    .style("fill", "#69b3a2")
-    .on("mouseover", function(event, d) {
-      d3.select(this).transition()
-        .duration(100)
-        .attr("r", 7);
-      tooltip.transition()
-        .duration(100)
-        .style("opacity", .9);
-      tooltip.html(`Make: ${d.Make}<br/>Fuel: ${d.Fuel}<br/>City MPG: ${d.AverageCityMPG}<br/>Highway MPG: ${d.AverageHighwayMPG}`)
-        .style("left", (event.pageX + 10) + "px")
-        .style("top", (event.pageY - 28) + "px");
-    })
-    .on("mouseout", function() {
-      d3.select(this).transition()
-        .duration(200)
-        .attr("r", 5);
-      tooltip.transition()
-        .duration(200)
-        .style("opacity", 0);
-    });
+    .style("fill", "#69b3a2");
 
   svg.append("text")
     .attr("x", width / 2)
@@ -169,26 +145,7 @@ function drawFuelTypeComparison(data) {
     .attr("y", d => y(d.avgCityMPG))
     .attr("width", x.bandwidth() / 2)
     .attr("height", d => height - y(d.avgCityMPG))
-    .attr("fill", "#69b3a2")
-    .on("mouseover", function(event, d) {
-      d3.select(this).transition()
-        .duration(100)
-        .attr("opacity", 0.8);
-      tooltip.transition()
-        .duration(100)
-        .style("opacity", .9);
-      tooltip.html(`Fuel: ${d.fuel}<br/>Avg City MPG: ${d.avgCityMPG.toFixed(2)}`)
-        .style("left", (event.pageX + 10) + "px")
-        .style("top", (event.pageY - 28) + "px");
-    })
-    .on("mouseout", function() {
-      d3.select(this).transition()
-        .duration(200)
-        .attr("opacity", 1);
-      tooltip.transition()
-        .duration(200)
-        .style("opacity", 0);
-    });
+    .attr("fill", "#69b3a2");
 
   svg.selectAll(".bar-highway")
     .data(fuelData)
@@ -199,26 +156,7 @@ function drawFuelTypeComparison(data) {
     .attr("y", d => y(d.avgHighwayMPG))
     .attr("width", x.bandwidth() / 2)
     .attr("height", d => height - y(d.avgHighwayMPG))
-    .attr("fill", "#404080")
-    .on("mouseover", function(event, d) {
-      d3.select(this).transition()
-        .duration(100)
-        .attr("opacity", 0.8);
-      tooltip.transition()
-        .duration(100)
-        .style("opacity", .9);
-      tooltip.html(`Fuel: ${d.fuel}<br/>Avg Highway MPG: ${d.avgHighwayMPG.toFixed(2)}`)
-        .style("left", (event.pageX + 10) + "px")
-        .style("top", (event.pageY - 28) + "px");
-    })
-    .on("mouseout", function() {
-      d3.select(this).transition()
-        .duration(200)
-        .attr("opacity", 1);
-      tooltip.transition()
-        .duration(200)
-        .style("opacity", 0);
-    });
+    .attr("fill", "#404080");
 
   svg.append("text")
     .attr("x", width / 2)
@@ -234,10 +172,10 @@ function drawFuelTypeComparison(data) {
     .text("Average MPG");
 
   // Legend
-  svg.append("rect").attr("x", width - 100).attr("y", 0).attr("width", 10).attr("height", 10).style("fill", "#69b3a2");
-  svg.append("rect").attr("x", width - 100).attr("y", 20).attr("width", 10).attr("height", 10).style("fill", "#404080");
-  svg.append("text").attr("x", width - 85).attr("y", 10).text("City").style("font-size", "12px").attr("alignment-baseline","middle");
-  svg.append("text").attr("x", width - 85).attr("y", 30).text("Highway").style("font-size", "12px").attr("alignment-baseline","middle");
+  svg.append("rect").attr("x", width - 100).attr("y", 0).attr("width", 10).attr("height", 10).style("fill", "#69b3a2")
+  svg.append("rect").attr("x", width - 100).attr("y", 20).attr("width", 10).attr("height", 10).style("fill", "#404080")
+  svg.append("text").attr("x", width - 85).attr("y", 10).text("City").style("font-size", "12px").attr("alignment-baseline","middle")
+  svg.append("text").attr("x", width - 85).attr("y", 30).text("Highway").style("font-size", "12px").attr("alignment-baseline","middle")
 }
 
 function drawTopBrands(data) {
@@ -281,26 +219,7 @@ function drawTopBrands(data) {
     .attr("y", d => y(d.avgCityMPG))
     .attr("width", x.bandwidth() / 2)
     .attr("height", d => height - y(d.avgCityMPG))
-    .attr("fill", "#69b3a2")
-    .on("mouseover", function(event, d) {
-      d3.select(this).transition()
-        .duration(100)
-        .attr("opacity", 0.8);
-      tooltip.transition()
-        .duration(100)
-        .style("opacity", .9);
-      tooltip.html(`Brand: ${d.name}<br/>Avg City MPG: ${d.avgCityMPG.toFixed(2)}`)
-        .style("left", (event.pageX + 10) + "px")
-        .style("top", (event.pageY - 28) + "px");
-    })
-    .on("mouseout", function() {
-      d3.select(this).transition()
-        .duration(200)
-        .attr("opacity", 1);
-      tooltip.transition()
-        .duration(200)
-        .style("opacity", 0);
-    });
+    .attr("fill", "#69b3a2");
 
   svg.selectAll(".bar-highway")
     .data(sortedBrands)
@@ -311,26 +230,7 @@ function drawTopBrands(data) {
     .attr("y", d => y(d.avgHighwayMPG))
     .attr("width", x.bandwidth() / 2)
     .attr("height", d => height - y(d.avgHighwayMPG))
-    .attr("fill", "#404080")
-    .on("mouseover", function(event, d) {
-      d3.select(this).transition()
-        .duration(100)
-        .attr("opacity", 0.8);
-      tooltip.transition()
-        .duration(100)
-        .style("opacity", .9);
-      tooltip.html(`Brand: ${d.name}<br/>Avg Highway MPG: ${d.avgHighwayMPG.toFixed(2)}`)
-        .style("left", (event.pageX + 10) + "px")
-        .style("top", (event.pageY - 28) + "px");
-    })
-    .on("mouseout", function() {
-      d3.select(this).transition()
-        .duration(200)
-        .attr("opacity", 1);
-      tooltip.transition()
-        .duration(200)
-        .style("opacity", 0);
-    });
+    .attr("fill", "#404080");
 
   svg.append("text")
     .attr("x", width / 2)
@@ -346,4 +246,28 @@ function drawTopBrands(data) {
     .text("Average MPG");
 
   // Legend
-  svg.append("rect").attr("x", width - 100).attr("y", 0).
+  svg.append("rect").attr("x", width - 100).attr("y", 0).attr("width", 10).attr("height", 10).style("fill", "#69b3a2")
+  svg.append("rect").attr("x", width - 100).attr("y", 20).attr("width", 10).attr("height", 10).style("fill", "#404080")
+  svg.append("text").attr("x", width - 85).attr("y", 10).text("City").style("font-size", "12px").attr("alignment-baseline","middle")
+  svg.append("text").attr("x", width - 85).attr("y", 30).text("Highway").style("font-size", "12px").attr("alignment-baseline","middle")
+}
+
+function drawConclusion() {
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", height / 2)
+    .attr("text-anchor", "middle")
+    .text("Conclusion: Key Findings from 2017 Automobile Data");
+  
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", height / 2 + 30)
+    .attr("text-anchor", "middle")
+    .text("Electric vehicles tend to have the highest MPG ratings");
+  
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", height / 2 + 60)
+    .attr("text-anchor", "middle")
+    .text("Luxury brands often have lower MPG ratings");
+}

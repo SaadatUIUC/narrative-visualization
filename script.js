@@ -137,6 +137,14 @@ function drawScatterPlot(data) {
         .attr("r", 5)
         .style("fill", "#69b3a2");
       tooltip.style("display", "none");
+    })
+    .on("click", function(event, d) {
+      const scale = 2;
+      const transform = d3.zoomIdentity
+        .translate(width / 2 - x(d.AverageCityMPG) * scale, height / 2 - y(d.AverageHighwayMPG) * scale)
+        .scale(scale);
+
+      scatterPlot.transition().duration(750).call(zoom.transform, transform);
     });
 
   svg.append("text")
@@ -165,12 +173,10 @@ function drawScatterPlot(data) {
       .attr("cy", d => newY(d.AverageHighwayMPG));
   }
 
-  scatterPlot.on("click", function(event) {
-    zoom.scaleBy(scatterPlot.transition().duration(750), 2);
-  });
-
-  scatterPlot.on("dblclick", function(event) {
-    zoom.scaleBy(scatterPlot.transition().duration(750), 0.5);
+  d3.select("body").on("keydown", function(event) {
+    if (event.key === "Escape") {
+      scatterPlot.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+    }
   });
 }
 

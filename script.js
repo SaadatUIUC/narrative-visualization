@@ -91,21 +91,21 @@ function drawScatterPlot(data) {
     .on("zoom", zoomed);
 
   const scatterPlot = svg.append("g")
-    .attr("clip-path", "url(#clip)");
+    .attr("clip-path", "url(#clip)")
+    .call(zoom);
 
   scatterPlot.append("rect")
     .attr("width", width)
     .attr("height", height)
     .style("fill", "none")
-    .style("pointer-events", "all")
-    .call(zoom);
+    .style("pointer-events", "all");
 
-  scatterPlot.append("g")
+  const xAxis = scatterPlot.append("g")
     .attr("transform", `translate(0,${height})`)
     .attr("class", "x-axis")
     .call(d3.axisBottom(x));
 
-  scatterPlot.append("g")
+  const yAxis = scatterPlot.append("g")
     .attr("class", "y-axis")
     .call(d3.axisLeft(y));
 
@@ -157,12 +157,12 @@ function drawScatterPlot(data) {
     const newX = transform.rescaleX(x);
     const newY = transform.rescaleY(y);
 
-    scatterPlot.selectAll("circle")
+    xAxis.call(d3.axisBottom(newX));
+    yAxis.call(d3.axisLeft(newY));
+
+    points
       .attr("cx", d => newX(d.AverageCityMPG))
       .attr("cy", d => newY(d.AverageHighwayMPG));
-
-    scatterPlot.select(".x-axis").call(d3.axisBottom(newX));
-    scatterPlot.select(".y-axis").call(d3.axisLeft(newY));
   }
 
   scatterPlot.on("click", function(event) {

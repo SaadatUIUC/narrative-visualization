@@ -17,7 +17,30 @@ const tooltip = d3.select("body").append("div")
   .attr("class", "tooltip")
   .style("opacity", 0);
 
-// Load data
+// Function to update the visualization based on the current scene
+function updateVisualization(scene, data) {
+  svg.selectAll("*").remove();  // Clear previous content
+  
+  switch(scene) {
+    case 1:
+      drawIntroduction();
+      break;
+    case 2:
+      drawScatterPlot(data);
+      break;
+    case 3:
+      drawFuelTypeComparison(data);
+      break;
+    case 4:
+      drawTopBrands(data);
+      break;
+    case 5:
+      drawConclusion();
+      break;
+  }
+}
+
+// Load data and set up visualization
 d3.csv("auto_data_2017.csv").then(function(data) {
   // Convert string values to numbers
   data.forEach(d => {
@@ -26,41 +49,18 @@ d3.csv("auto_data_2017.csv").then(function(data) {
     d.AverageCityMPG = +d.AverageCityMPG;
   });
 
-  // Function to update the visualization based on the current scene
-  function updateVisualization(scene) {
-    svg.selectAll("*").remove();  // Clear previous content
-    
-    switch(scene) {
-      case 1:
-        drawIntroduction();
-        break;
-      case 2:
-        drawScatterPlot(data);
-        break;
-      case 3:
-        drawFuelTypeComparison(data);
-        break;
-      case 4:
-        drawTopBrands(data);
-        break;
-      case 5:
-        drawConclusion();
-        break;
-    }
-  }
-  
   // Initialize with the first scene
-  updateVisualization(currentScene);
+  updateVisualization(currentScene, data);
   
   // Add navigation buttons
   d3.select("#prev-button").on("click", function() {
     currentScene = Math.max(1, currentScene - 1);
-    updateVisualization(currentScene);
+    updateVisualization(currentScene, data);
   });
   
   d3.select("#next-button").on("click", function() {
     currentScene = Math.min(5, currentScene + 1);
-    updateVisualization(currentScene);
+    updateVisualization(currentScene, data);
   });
 });
 
@@ -234,10 +234,10 @@ function drawFuelTypeComparison(data) {
     .text("Average MPG");
 
   // Legend
-  svg.append("rect").attr("x", width - 100).attr("y", 0).attr("width", 10).attr("height", 10).style("fill", "#69b3a2")
-  svg.append("rect").attr("x", width - 100).attr("y", 20).attr("width", 10).attr("height", 10).style("fill", "#404080")
-  svg.append("text").attr("x", width - 85).attr("y", 10).text("City").style("font-size", "12px").attr("alignment-baseline","middle")
-  svg.append("text").attr("x", width - 85).attr("y", 30).text("Highway").style("font-size", "12px").attr("alignment-baseline","middle")
+  svg.append("rect").attr("x", width - 100).attr("y", 0).attr("width", 10).attr("height", 10).style("fill", "#69b3a2");
+  svg.append("rect").attr("x", width - 100).attr("y", 20).attr("width", 10).attr("height", 10).style("fill", "#404080");
+  svg.append("text").attr("x", width - 85).attr("y", 10).text("City").style("font-size", "12px").attr("alignment-baseline","middle");
+  svg.append("text").attr("x", width - 85).attr("y", 30).text("Highway").style("font-size", "12px").attr("alignment-baseline","middle");
 }
 
 function drawTopBrands(data) {
@@ -346,4 +346,4 @@ function drawTopBrands(data) {
     .text("Average MPG");
 
   // Legend
-  svg.append("rect").attr("x", width - 100).attr("y", 0).attr("width", 10).attr("height", 10).style("fill", "#69
+  svg.append("rect").attr("x", width - 100).attr("y", 0).

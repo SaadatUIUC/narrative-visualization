@@ -50,7 +50,7 @@ d3.csv("auto_data_2017.csv").then(function(data) {
   }
   
   // Initialize with the first scene
-  updateVisualization(1);
+  updateVisualization(currentScene);
   
   // Add navigation buttons
   d3.select("#prev-button").on("click", function() {
@@ -104,7 +104,7 @@ function drawScatterPlot(data) {
     .style("fill", "#69b3a2")
     .on("mouseover", function(event, d) {
       d3.select(this).transition()
-        .duration('100')
+        .duration(100)
         .attr("r", 7);
       tooltip.transition()
         .duration(100)
@@ -113,12 +113,12 @@ function drawScatterPlot(data) {
         .style("left", (event.pageX + 10) + "px")
         .style("top", (event.pageY - 28) + "px");
     })
-    .on("mouseout", function(d) {
+    .on("mouseout", function() {
       d3.select(this).transition()
-        .duration('200')
+        .duration(200)
         .attr("r", 5);
       tooltip.transition()
-        .duration('200')
+        .duration(200)
         .style("opacity", 0);
     });
 
@@ -172,7 +172,7 @@ function drawFuelTypeComparison(data) {
     .attr("fill", "#69b3a2")
     .on("mouseover", function(event, d) {
       d3.select(this).transition()
-        .duration('100')
+        .duration(100)
         .attr("opacity", 0.8);
       tooltip.transition()
         .duration(100)
@@ -181,12 +181,12 @@ function drawFuelTypeComparison(data) {
         .style("left", (event.pageX + 10) + "px")
         .style("top", (event.pageY - 28) + "px");
     })
-    .on("mouseout", function(d) {
+    .on("mouseout", function() {
       d3.select(this).transition()
-        .duration('200')
+        .duration(200)
         .attr("opacity", 1);
       tooltip.transition()
-        .duration('200')
+        .duration(200)
         .style("opacity", 0);
     });
 
@@ -202,7 +202,7 @@ function drawFuelTypeComparison(data) {
     .attr("fill", "#404080")
     .on("mouseover", function(event, d) {
       d3.select(this).transition()
-        .duration('100')
+        .duration(100)
         .attr("opacity", 0.8);
       tooltip.transition()
         .duration(100)
@@ -211,12 +211,12 @@ function drawFuelTypeComparison(data) {
         .style("left", (event.pageX + 10) + "px")
         .style("top", (event.pageY - 28) + "px");
     })
-    .on("mouseout", function(d) {
+    .on("mouseout", function() {
       d3.select(this).transition()
-        .duration('200')
+        .duration(200)
         .attr("opacity", 1);
       tooltip.transition()
-        .duration('200')
+        .duration(200)
         .style("opacity", 0);
     });
 
@@ -284,7 +284,7 @@ function drawTopBrands(data) {
     .attr("fill", "#69b3a2")
     .on("mouseover", function(event, d) {
       d3.select(this).transition()
-        .duration('100')
+        .duration(100)
         .attr("opacity", 0.8);
       tooltip.transition()
         .duration(100)
@@ -293,12 +293,12 @@ function drawTopBrands(data) {
         .style("left", (event.pageX + 10) + "px")
         .style("top", (event.pageY - 28) + "px");
     })
-    .on("mouseout", function(d) {
+    .on("mouseout", function() {
       d3.select(this).transition()
-        .duration('200')
+        .duration(200)
         .attr("opacity", 1);
       tooltip.transition()
-        .duration('200')
+        .duration(200)
         .style("opacity", 0);
     });
 
@@ -314,7 +314,7 @@ function drawTopBrands(data) {
     .attr("fill", "#404080")
     .on("mouseover", function(event, d) {
       d3.select(this).transition()
-        .duration('100')
+        .duration(100)
         .attr("opacity", 0.8);
       tooltip.transition()
         .duration(100)
@@ -323,12 +323,12 @@ function drawTopBrands(data) {
         .style("left", (event.pageX + 10) + "px")
         .style("top", (event.pageY - 28) + "px");
     })
-    .on("mouseout", function(d) {
+    .on("mouseout", function() {
       d3.select(this).transition()
-        .duration('200')
+        .duration(200)
         .attr("opacity", 1);
       tooltip.transition()
-        .duration('200')
+        .duration(200)
         .style("opacity", 0);
     });
 
@@ -346,4 +346,4 @@ function drawTopBrands(data) {
     .text("Average MPG");
 
   // Legend
-  svg.append("rect").attr("x", width - 100
+  svg.append("rect").attr("x", width - 100).attr("y", 0).attr("width", 10).attr("height", 10).style("fill", "#69

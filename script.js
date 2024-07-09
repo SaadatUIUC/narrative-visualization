@@ -87,6 +87,7 @@ function drawScatterPlot(data) {
   const zoom = d3.zoom()
     .scaleExtent([1, 10])
     .translateExtent([[-100, -100], [width + 100, height + 100]])
+    .extent([[0, 0], [width, height]])
     .on("zoom", zoomed);
 
   const scatterPlot = svg.append("g")
